@@ -22,7 +22,4 @@ public class CustomException extends RuntimeException {
         this.httpStatus = httpStatus;
     }
 
-    public HttpStatus getHttpStatus() {
-        return httpStatus;
-    }
 }
