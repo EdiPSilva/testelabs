@@ -23,11 +23,12 @@ import java.util.Objects;
 @Slf4j
 @Service
 @AllArgsConstructor
-public class UploadFileService {
+public class ReadFileService {
 
     private final String validExtension = "txt";
     private final MessageConfiguration messageConfiguration;
     private final LogService logService;
+    private final UserService userService;
 
     public void uploadFile(final MultipartFile multipartFile) throws IOException {
         log.info("m=readFile");
@@ -50,6 +51,7 @@ public class UploadFileService {
                             .productValue(new DoubleValueExtractor(messageConfiguration).extractValueWithValidation(line, index, InfoLineEnum.PRODUCT_VALUE))
                             .orderDate(new LocalDateValueExtractor(messageConfiguration).extractValueWithValidation(line, index, InfoLineEnum.ORDER_DATE))
                             .build();
+                    userService.createUser(lineDTO);
                 } catch (CustomException customException) {
                     log.warn(customException.getMessage());
                     logService.createLog(multipartFile.getName(), index, customException.getMessage());

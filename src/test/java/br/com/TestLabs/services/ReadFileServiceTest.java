@@ -26,22 +26,27 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class UploadFileServiceTest {
+public class ReadFileServiceTest {
 
     private final String validOrdersFile = "valid-orders.txt";
 
     @InjectMocks
-    private UploadFileService uploadFileService;
+    private ReadFileService readFileService;
 
     @Mock
     private MessageConfiguration messageConfiguration;
 
     @Mock
     private LogService logService;
+
+    @Mock
+    private UserService userService;
 
     @Captor
     private ArgumentCaptor<String> fileNameCaptor;
@@ -65,10 +70,11 @@ public class UploadFileServiceTest {
     public void shouldReturnAnErroWhenTheFileIsInvalid() {
         final MessageCodeEnum messageCodeEnum = MessageCodeEnum.ERROR_INVALID_FILE;
         when(messageConfiguration.getMessageByCode(messageCodeEnum)).thenReturn(messageCodeEnum.getValue());
-        final CustomException throwable = assertThrows(CustomException.class, () -> uploadFileService.uploadFile(null));
+        final CustomException throwable = assertThrows(CustomException.class, () -> readFileService.uploadFile(null));
         assertNotNull(throwable);
         assertEquals(HttpStatus.BAD_REQUEST, throwable.getHttpStatus());
         assertEquals(throwable.getMessage(), messageCodeEnum.getValue());
+        verify(userService, never()).createUser(any());
     }
 
     @Test
@@ -78,10 +84,11 @@ public class UploadFileServiceTest {
         final String invalidExtensionFile = "invalid-extension.csv";
         final MultipartFile multipartFile = readFile(invalidExtensionFile);
         when(messageConfiguration.getMessageByCode(messageCodeEnum)).thenReturn(messageCodeEnum.getValue());
-        final CustomException throwable = assertThrows(CustomException.class, () -> uploadFileService.uploadFile(multipartFile));
+        final CustomException throwable = assertThrows(CustomException.class, () -> readFileService.uploadFile(multipartFile));
         assertNotNull(throwable);
         assertEquals(HttpStatus.BAD_REQUEST, throwable.getHttpStatus());
         assertEquals(throwable.getMessage(), messageCodeEnum.getValue());
+        verify(userService, never()).createUser(any());
     }
 
     @Test
@@ -124,7 +131,7 @@ public class UploadFileServiceTest {
         final MessageCodeEnum messageCodeEnum = MessageCodeEnum.WARN_INVALID_POSITION_VALUE;
         final MultipartFile multipartFile = readFile(invalidFile);
         when(messageConfiguration.getMessageByCode(any(), any(), any())).thenReturn(messageCodeEnum.getValue());
-        assertDoesNotThrow(() -> uploadFileService.uploadFile(multipartFile));
+        assertDoesNotThrow(() -> readFileService.uploadFile(multipartFile));
         verify(logService).createLog(fileNameCaptor.capture(), lineNumberCaptor.capture(), logMessageCaptor.capture());
         final String fileName = fileNameCaptor.getValue();
         final Integer lineNumber = lineNumberCaptor.getValue();
@@ -133,5 +140,15 @@ public class UploadFileServiceTest {
         assertEquals(fileName, invalidFile);
         assertTrue(lineNumber > 0);
         assertEquals(logMessage, messageCodeEnum.getValue());
+        verify(userService, never()).createUser(any());
+    }
+
+    @Test
+    @DisplayName("Nao deve retornar nenhum erro e executar a rotina de cadastro")
+    public void shouldNotReturnNoErrorAndRunTheCreateRoutine() throws IOException {
+        final MultipartFile multipartFile = readFile("valid-orders.txt");
+        assertDoesNotThrow(() -> readFileService.uploadFile(multipartFile));
+        verify(messageConfiguration, never()).getMessageByCode(any());
+        verify(userService, times(5)).createUser(any());
     }
 }
