@@ -1,6 +1,7 @@
 package br.com.TestLabs.services;
 
 import br.com.TestLabs.builders.LineDTOBuilder;
+import br.com.TestLabs.builders.OrderEntityBuilder;
 import br.com.TestLabs.builders.UserEntityBuilder;
 import br.com.TestLabs.configurations.MessageConfiguration;
 import br.com.TestLabs.dtos.LineDTO;
@@ -24,6 +25,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -43,6 +45,9 @@ public class OrderServiceTest {
     @Mock
     private MessageConfiguration messageConfiguration;
 
+    @Mock
+    private ProductService productService;
+
     @Captor
     private ArgumentCaptor<OrderEntity> orderEntityCaptor;
 
@@ -57,6 +62,7 @@ public class OrderServiceTest {
         assertEquals(HttpStatus.BAD_REQUEST, throwable.getHttpStatus());
         assertEquals(throwable.getMessage(), messageCodeEnum.getValue());
         verify(orderRepository, never()).save(any());
+        verify(productService, never()).getTotalAmountByOrder(anyLong());
     }
 
     @Test
@@ -70,6 +76,7 @@ public class OrderServiceTest {
         assertEquals(HttpStatus.BAD_REQUEST, throwable.getHttpStatus());
         assertEquals(throwable.getMessage(), messageCodeEnum.getValue());
         verify(orderRepository, never()).save(any());
+        verify(productService, never()).getTotalAmountByOrder(anyLong());
     }
 
     @Test
@@ -78,14 +85,40 @@ public class OrderServiceTest {
         final UserEntity userEntity = UserEntityBuilder.getInstance().getUserEntity();
         final LineDTO lineDTO = LineDTOBuilder.getInstance().getLineDTO();
         when(orderRepository.findOrderByIdAndUserId(anyLong(), anyLong())).thenReturn(Optional.empty());
+        final Double totalAmount = 0.0;
+        when(productService.getTotalAmountByOrder(anyLong())).thenReturn(totalAmount);
         assertDoesNotThrow(() -> orderService.createOrUpdateOrder(userEntity, lineDTO));
         verify(orderRepository).save(orderEntityCaptor.capture());
-        final OrderEntity orderEntity = orderEntityCaptor.getValue();
-        assertNotNull(orderEntity);
-        assertEquals(orderEntity.getId(), lineDTO.getOrderId());
-        assertEquals(orderEntity.getDate(), lineDTO.getOrderDate());
-        assertNotNull(orderEntity.getUser());
-        assertEquals(orderEntity.getUser().getId(), lineDTO.getUserId());
+        final OrderEntity orderEntityResult = orderEntityCaptor.getValue();
+        assertNotNull(orderEntityResult);
+        assertEquals(orderEntityResult.getId(), lineDTO.getOrderId());
+        assertEquals(orderEntityResult.getDate(), lineDTO.getOrderDate());
+        assertEquals(orderEntityResult.getTotalAmount(), totalAmount + lineDTO.getProductValue());
+        assertNotNull(orderEntityResult.getUser());
+        assertNull(orderEntityResult.getUpdateDate());
+        assertEquals(orderEntityResult.getUser().getId(), lineDTO.getUserId());
     }
+
+    @Test
+    @DisplayName("Deve atualizar o pedido quando for localizado")
+    public void shouldUpdateTheOrderWhenItIsLocated() {
+        final UserEntity userEntity = UserEntityBuilder.getInstance().getUserEntity();
+        final LineDTO lineDTO = LineDTOBuilder.getInstance().getLineDTO();
+        final OrderEntity orderEntity = OrderEntityBuilder.getInstance().getOrderEntity();
+        when(orderRepository.findOrderByIdAndUserId(anyLong(), anyLong())).thenReturn(Optional.of(orderEntity));
+        final Double totalAmount = 11.35;
+        when(productService.getTotalAmountByOrder(anyLong())).thenReturn(totalAmount);
+        assertDoesNotThrow(() -> orderService.createOrUpdateOrder(userEntity, lineDTO));
+        verify(orderRepository).save(orderEntityCaptor.capture());
+        final OrderEntity orderEntityResult = orderEntityCaptor.getValue();
+        assertNotNull(orderEntityResult);
+        assertEquals(orderEntityResult.getId(), lineDTO.getOrderId());
+        assertEquals(orderEntityResult.getDate(), lineDTO.getOrderDate());
+        assertEquals(orderEntityResult.getTotalAmount(), totalAmount + lineDTO.getProductValue());
+        assertNotNull(orderEntityResult.getUpdateDate());
+        assertNotNull(orderEntityResult.getUser());
+        assertEquals(orderEntityResult.getUser().getId(), lineDTO.getUserId());
+    }
+
 
 }

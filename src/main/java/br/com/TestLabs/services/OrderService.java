@@ -23,14 +23,16 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final MessageConfiguration messageConfiguration;
+    private final ProductService productService;
 
     public void createOrUpdateOrder(final UserEntity userEntity, final LineDTO lineDTO) {
         log.info("m=createOrUpdateOrder, lineDTO={}", lineDTO);
         if (Objects.isNull(userEntity) || Objects.isNull(lineDTO)) {
             throw new CustomException(messageConfiguration.getMessageByCode(MessageCodeEnum.ERROR_INVALID_OBJECT), HttpStatus.BAD_REQUEST);
         }
+        final Double totalAmount = productService.getTotalAmountByOrder(lineDTO.getOrderId());
         final Optional<OrderEntity> orderEntityOptional = orderRepository.findOrderByIdAndUserId(lineDTO.getOrderId(), userEntity.getId());
-        OrderEntity orderEntity = null;
+        OrderEntity orderEntity;
         if (orderEntityOptional.isEmpty()) {
             orderEntity = OrderEntity.builder()
                     .id(lineDTO.getOrderId())
@@ -38,10 +40,12 @@ public class OrderService {
                     .createDate(LocalDateTime.now())
                     .user(userEntity)
                     .build();
-            orderEntity = orderRepository.save(orderEntity);
         } else {
             orderEntity = orderEntityOptional.get();
+            orderEntity.setUpdateDate(LocalDateTime.now());
         }
-
+        orderEntity.setTotalAmount(totalAmount + lineDTO.getProductValue());
+        orderEntity = orderRepository.save(orderEntity);
+        productService.createOrUpdateProduct(orderEntity, lineDTO);
     }
 }
