@@ -70,7 +70,7 @@ public class ReadFileServiceTest {
     public void shouldReturnAnErroWhenTheFileIsInvalid() {
         final MessageCodeEnum messageCodeEnum = MessageCodeEnum.ERROR_INVALID_FILE;
         when(messageConfiguration.getMessageByCode(messageCodeEnum)).thenReturn(messageCodeEnum.getValue());
-        final CustomException throwable = assertThrows(CustomException.class, () -> readFileService.uploadFile(null));
+        final CustomException throwable = assertThrows(CustomException.class, () -> readFileService.readFile(null));
         assertNotNull(throwable);
         assertEquals(HttpStatus.BAD_REQUEST, throwable.getHttpStatus());
         assertEquals(throwable.getMessage(), messageCodeEnum.getValue());
@@ -84,7 +84,7 @@ public class ReadFileServiceTest {
         final String invalidExtensionFile = "invalid-extension.csv";
         final MultipartFile multipartFile = readFile(invalidExtensionFile);
         when(messageConfiguration.getMessageByCode(messageCodeEnum)).thenReturn(messageCodeEnum.getValue());
-        final CustomException throwable = assertThrows(CustomException.class, () -> readFileService.uploadFile(multipartFile));
+        final CustomException throwable = assertThrows(CustomException.class, () -> readFileService.readFile(multipartFile));
         assertNotNull(throwable);
         assertEquals(HttpStatus.BAD_REQUEST, throwable.getHttpStatus());
         assertEquals(throwable.getMessage(), messageCodeEnum.getValue());
@@ -131,7 +131,7 @@ public class ReadFileServiceTest {
         final MessageCodeEnum messageCodeEnum = MessageCodeEnum.WARN_INVALID_POSITION_VALUE;
         final MultipartFile multipartFile = readFile(invalidFile);
         when(messageConfiguration.getMessageByCode(any(), any(), any())).thenReturn(messageCodeEnum.getValue());
-        assertDoesNotThrow(() -> readFileService.uploadFile(multipartFile));
+        assertDoesNotThrow(() -> readFileService.readFile(multipartFile));
         verify(logService).createLog(fileNameCaptor.capture(), lineNumberCaptor.capture(), logMessageCaptor.capture());
         final String fileName = fileNameCaptor.getValue();
         final Integer lineNumber = lineNumberCaptor.getValue();
@@ -147,7 +147,7 @@ public class ReadFileServiceTest {
     @DisplayName("Nao deve retornar nenhum erro e executar a rotina de cadastro")
     public void shouldNotReturnNoErrorAndRunTheCreateRoutine() throws IOException {
         final MultipartFile multipartFile = readFile("valid-orders.txt");
-        assertDoesNotThrow(() -> readFileService.uploadFile(multipartFile));
+        assertDoesNotThrow(() -> readFileService.readFile(multipartFile));
         verify(messageConfiguration, never()).getMessageByCode(any());
         verify(userService, times(5)).createUser(any());
     }

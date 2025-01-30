@@ -30,7 +30,7 @@ public class ReadFileService {
     private final LogService logService;
     private final UserService userService;
 
-    public void uploadFile(final MultipartFile multipartFile) throws IOException {
+    public void readFile(final MultipartFile multipartFile) throws IOException {
         log.info("m=readFile");
         if (Objects.isNull(multipartFile) || multipartFile.isEmpty()) {
             throw new CustomException(messageConfiguration.getMessageByCode(MessageCodeEnum.ERROR_INVALID_FILE), HttpStatus.BAD_REQUEST);
