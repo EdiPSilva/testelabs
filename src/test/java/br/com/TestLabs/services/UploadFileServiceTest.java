@@ -6,9 +6,10 @@ import br.com.TestLabs.exceptions.CustomException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockMultipartFile;
@@ -19,22 +20,37 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Objects;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class UploadFileServiceTest {
 
     private final String validOrdersFile = "valid-orders.txt";
-    private final String invalidExtensionFile = "invalid-extension.csv";
 
     @InjectMocks
     private UploadFileService uploadFileService;
 
     @Mock
-    protected MessageConfiguration messageConfiguration;
+    private MessageConfiguration messageConfiguration;
+
+    @Mock
+    private LogService logService;
+
+    @Captor
+    private ArgumentCaptor<String> fileNameCaptor;
+
+    @Captor
+    private ArgumentCaptor<Integer> lineNumberCaptor;
+
+    @Captor
+    private ArgumentCaptor<String> logMessageCaptor;
 
     private MultipartFile readFile(final String fileName) throws IOException {
         final ClassLoader classLoader = getClass().getClassLoader();
@@ -59,11 +75,29 @@ public class UploadFileServiceTest {
     @DisplayName("Deve retorna um erro quando a extensao do arquivo for invalida")
     public void shouldReturnAnErroWhenTheFileExtensionIsInvalid() throws IOException {
         final MessageCodeEnum messageCodeEnum = MessageCodeEnum.ERROR_INVALID_FILE_EXTENSION;
+        final String invalidExtensionFile = "invalid-extension.csv";
         final MultipartFile multipartFile = readFile(invalidExtensionFile);
         when(messageConfiguration.getMessageByCode(messageCodeEnum)).thenReturn(messageCodeEnum.getValue());
         final CustomException throwable = assertThrows(CustomException.class, () -> uploadFileService.uploadFile(multipartFile));
         assertNotNull(throwable);
         assertEquals(HttpStatus.BAD_REQUEST, throwable.getHttpStatus());
         assertEquals(throwable.getMessage(), messageCodeEnum.getValue());
+    }
+
+    @Test
+    @DisplayName("Deve criar um log quando o id do usuario for invalido")
+    public void shouldCreatALogWhenUserIdIsInvalid() throws IOException {
+        final MessageCodeEnum messageCodeEnum = MessageCodeEnum.WARN_INVALID_POSITION_VALUE;
+        final MultipartFile multipartFile = readFile("invalid-userId.txt");
+        when(messageConfiguration.getMessageByCode(any(), any(), any())).thenReturn(messageCodeEnum.getValue());
+        assertDoesNotThrow(() -> uploadFileService.uploadFile(multipartFile));
+        verify(logService).createLog(fileNameCaptor.capture(), lineNumberCaptor.capture(), logMessageCaptor.capture());
+        final String fileName = fileNameCaptor.getValue();
+        final Integer lineNumber = lineNumberCaptor.getValue();
+        final String logMessage = logMessageCaptor.getValue();
+        assertNotNull(fileName);
+        assertEquals(fileName, "invalid-userId.txt");
+        assertTrue(lineNumber > 0);
+        assertEquals(logMessage, messageCodeEnum.getValue());
     }
 }

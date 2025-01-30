@@ -5,7 +5,6 @@ import br.com.TestLabs.entities.LogEntity;
 import br.com.TestLabs.enums.MessageCodeEnum;
 import br.com.TestLabs.exceptions.CustomException;
 import br.com.TestLabs.repositories.LogRepository;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

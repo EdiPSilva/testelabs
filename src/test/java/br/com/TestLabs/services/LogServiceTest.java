@@ -27,6 +27,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class LogServiceTest {
 
+    private final String defaultValue = "test";
+
     @InjectMocks
     private LogService logService;
 
@@ -44,7 +46,7 @@ public class LogServiceTest {
     public void shouldNotCreateTheLogWhenFileNameIsInvalid() {
         final MessageCodeEnum messageCodeEnum = MessageCodeEnum.ERROR_INVALID_DATA_CREATE_LOG;
         when(messageConfiguration.getMessageByCode(messageCodeEnum)).thenReturn(messageCodeEnum.getValue());
-        final CustomException throwable = assertThrows(CustomException.class, () -> logService.createLog(null, 1, "test"));
+        final CustomException throwable = assertThrows(CustomException.class, () -> logService.createLog(null, 1, defaultValue));
         assertNotNull(throwable);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, throwable.getHttpStatus());
         assertEquals(throwable.getMessage(), messageCodeEnum.getValue());
@@ -56,7 +58,7 @@ public class LogServiceTest {
     public void shouldNotCreateTheLogWhenFileLineIsInvalid() {
         final MessageCodeEnum messageCodeEnum = MessageCodeEnum.ERROR_INVALID_DATA_CREATE_LOG;
         when(messageConfiguration.getMessageByCode(messageCodeEnum)).thenReturn(messageCodeEnum.getValue());
-        final CustomException throwable = assertThrows(CustomException.class, () -> logService.createLog("test", 0, "test"));
+        final CustomException throwable = assertThrows(CustomException.class, () -> logService.createLog(defaultValue, 0, defaultValue));
         assertNotNull(throwable);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, throwable.getHttpStatus());
         assertEquals(throwable.getMessage(), messageCodeEnum.getValue());
@@ -68,7 +70,7 @@ public class LogServiceTest {
     public void shouldNotCreateTheLogWhenLogMessageIsInvalid() {
         final MessageCodeEnum messageCodeEnum = MessageCodeEnum.ERROR_INVALID_DATA_CREATE_LOG;
         when(messageConfiguration.getMessageByCode(messageCodeEnum)).thenReturn(messageCodeEnum.getValue());
-        final CustomException throwable = assertThrows(CustomException.class, () -> logService.createLog("test", 1, null));
+        final CustomException throwable = assertThrows(CustomException.class, () -> logService.createLog(defaultValue, 1, null));
         assertNotNull(throwable);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, throwable.getHttpStatus());
         assertEquals(throwable.getMessage(), messageCodeEnum.getValue());
