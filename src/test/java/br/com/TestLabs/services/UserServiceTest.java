@@ -1,6 +1,7 @@
 package br.com.TestLabs.services;
 
 import br.com.TestLabs.builders.LineDTOBuilder;
+import br.com.TestLabs.builders.UserEntityBuilder;
 import br.com.TestLabs.configurations.MessageConfiguration;
 import br.com.TestLabs.dtos.LineDTO;
 import br.com.TestLabs.entities.UserEntity;
@@ -60,6 +61,16 @@ public class UserServiceTest {
     @Test
     @DisplayName("Nao deve cadastrar o usuario quando ja existir")
     public void shouldNotCreateTheUserWhenAlreadyExists() {
+        final LineDTO lineDTO = LineDTOBuilder.getInstance().getLineDTO();
+        final UserEntity userEntity = UserEntityBuilder.getInstance().getUserEntity();
+        Mockito.when(userRepository.findById(anyLong())).thenReturn(Optional.of(userEntity));
+        assertDoesNotThrow(() -> userService.createUser(lineDTO));
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Deve cadastrar o usuario quando nao for localizado")
+    public void shouldCreateTheUserWhenNotFound() {
         final LineDTO lineDTO = LineDTOBuilder.getInstance().getLineDTO();
         Mockito.when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
         assertDoesNotThrow(() -> userService.createUser(lineDTO));
