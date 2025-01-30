@@ -12,7 +12,7 @@ public class StringValueExtractor extends ValueExtractor {
     private final MessageConfiguration messageConfiguration;
 
     @Override
-    protected String validateAndConvert(String value, InfoLineEnum infoLineEnum, Integer index) {
+    protected String validateAndConvert(final String value, final InfoLineEnum infoLineEnum, final Integer index) {
         if (value.isBlank()) {
             throw new CustomException(messageConfiguration.getMessageByCode(MessageCodeEnum.WARN_INVALID_POSITION_VALUE, infoLineEnum.getName(), index));
         }

@@ -12,9 +12,9 @@ public class DoubleValueExtractor extends ValueExtractor {
     private final MessageConfiguration messageConfiguration;
 
     @Override
-    protected Double validateAndConvert(String value, InfoLineEnum infoLineEnum, Integer index) {
+    protected Double validateAndConvert(final String value, final InfoLineEnum infoLineEnum, final Integer index) {
         try {
-            double doubleValue = Double.parseDouble(value);
+            final double doubleValue = Double.parseDouble(value);
             if (doubleValue <= 0) {
                 throw new CustomException(messageConfiguration.getMessageByCode(MessageCodeEnum.WARN_INVALID_POSITION_VALUE, infoLineEnum.getName(), index));
             }
