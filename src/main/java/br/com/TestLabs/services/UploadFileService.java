@@ -5,6 +5,10 @@ import br.com.TestLabs.dtos.LineDTO;
 import br.com.TestLabs.enums.MessageCodeEnum;
 import br.com.TestLabs.enums.InfoLineEnum;
 import br.com.TestLabs.exceptions.CustomException;
+import br.com.TestLabs.services.templateMethod.DoubleValueExtractor;
+import br.com.TestLabs.services.templateMethod.LocalDateValueExtractor;
+import br.com.TestLabs.services.templateMethod.LongValueExtractor;
+import br.com.TestLabs.services.templateMethod.StringValueExtractor;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -39,11 +43,12 @@ public class UploadFileService {
                 index++;
                 try {
                     final LineDTO lineDTO = LineDTO.builder()
-                            .userId(extractLongValue(line, index, InfoLineEnum.USER_ID))
-                            .userName(extractStringValue(line, index, InfoLineEnum.USER_NAME))
-                            .orderId(extractLongValue(line, index, InfoLineEnum.ORDER_ID))
-                            .productId(extractLongValue(line, index, InfoLineEnum.PRODUCT_ID))
-                            .productValue(extractDoubleValue(line, index, InfoLineEnum.PRODUCT_VALUE))
+                            .userId(new LongValueExtractor(messageConfiguration).extractValueWithValidation(line, index, InfoLineEnum.USER_ID))
+                            .userName(new StringValueExtractor(messageConfiguration).extractValueWithValidation(line, index, InfoLineEnum.USER_NAME))
+                            .orderId(new LongValueExtractor(messageConfiguration).extractValueWithValidation(line, index, InfoLineEnum.ORDER_ID))
+                            .productId(new LongValueExtractor(messageConfiguration).extractValueWithValidation(line, index, InfoLineEnum.PRODUCT_ID))
+                            .productValue(new DoubleValueExtractor(messageConfiguration).extractValueWithValidation(line, index, InfoLineEnum.PRODUCT_VALUE))
+                            .orderDate(new LocalDateValueExtractor(messageConfiguration).extractValueWithValidation(line, index, InfoLineEnum.ORDER_DATE))
                             .build();
                 } catch (CustomException customException) {
                     log.warn(customException.getMessage());
@@ -58,50 +63,6 @@ public class UploadFileService {
         final String extension = fileName.substring(fileName.indexOf(".") + 1);
         if (!extension.contains(validExtension)) {
             throw new CustomException(messageConfiguration.getMessageByCode(MessageCodeEnum.ERROR_INVALID_FILE_EXTENSION), HttpStatus.BAD_REQUEST);
-        }
-    }
-
-    private String extractValue(final String line, final InfoLineEnum infoLineEnum) {
-        return line.substring(infoLineEnum.getStart(), infoLineEnum.getEnd());
-    }
-
-    private Long extractLongValue(final String line,
-                                  final Integer index,
-                                  final InfoLineEnum infoLineEnum) {
-        try {
-            final String value = extractValue(line, infoLineEnum);
-            final Long longValue = Long.valueOf(value);
-            if (longValue >= 0) {
-                throw new CustomException(messageConfiguration.getMessageByCode(MessageCodeEnum.WARN_INVALID_POSITION_VALUE, infoLineEnum.getName(), index));
-            }
-            return longValue;
-        } catch (NumberFormatException numberFormatException) {
-            throw new CustomException(messageConfiguration.getMessageByCode(MessageCodeEnum.WARN_INVALID_POSITION_VALUE, infoLineEnum.getName(), index));
-        }
-    }
-
-    private String extractStringValue(final String line,
-                                       final Integer index,
-                                       final InfoLineEnum infoLineEnum) {
-        final String value = extractValue(line, infoLineEnum);
-        if (value.isBlank()) {
-            throw new CustomException(messageConfiguration.getMessageByCode(MessageCodeEnum.WARN_INVALID_POSITION_VALUE, infoLineEnum.getName(), index));
-        }
-        return value;
-    }
-
-    private Double extractDoubleValue(final String line,
-                                      final Integer index,
-                                      final InfoLineEnum infoLineEnum) {
-        try {
-            final String value = extractValue(line, infoLineEnum);
-            final Double doubleValue = Double.valueOf(value);
-            if (doubleValue >= 0) {
-                throw new CustomException(messageConfiguration.getMessageByCode(MessageCodeEnum.WARN_INVALID_POSITION_VALUE, infoLineEnum.getName(), index));
-            }
-            return doubleValue;
-        } catch (NumberFormatException numberFormatException) {
-            throw new CustomException(messageConfiguration.getMessageByCode(MessageCodeEnum.WARN_INVALID_POSITION_VALUE, infoLineEnum.getName(), index));
         }
     }
 }

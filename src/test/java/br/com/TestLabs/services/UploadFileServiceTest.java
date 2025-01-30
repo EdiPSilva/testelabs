@@ -62,7 +62,7 @@ public class UploadFileServiceTest {
 
     @Test
     @DisplayName("Deve retorna um erro quando o arquivo for invalido")
-    public void shouldReturnAnErroWhenTheFileIsInvalid() throws IOException {
+    public void shouldReturnAnErroWhenTheFileIsInvalid() {
         final MessageCodeEnum messageCodeEnum = MessageCodeEnum.ERROR_INVALID_FILE;
         when(messageConfiguration.getMessageByCode(messageCodeEnum)).thenReturn(messageCodeEnum.getValue());
         final CustomException throwable = assertThrows(CustomException.class, () -> uploadFileService.uploadFile(null));
@@ -87,8 +87,42 @@ public class UploadFileServiceTest {
     @Test
     @DisplayName("Deve criar um log quando o id do usuario for invalido")
     public void shouldCreatALogWhenUserIdIsInvalid() throws IOException {
+        testAboutFileValuesValidations("invalid-userId.txt");
+    }
+
+    @Test
+    @DisplayName("Deve criar um log quando o nome do usuario for invalido")
+    public void shouldCreatALogWhenUserNameIsInvalid() throws IOException {
+        testAboutFileValuesValidations("invalid-userName.txt");
+    }
+
+    @Test
+    @DisplayName("Deve criar um log quando o id do pedido for invalido")
+    public void shouldCreatALogWhenOrderIdIsInvalid() throws IOException {
+        testAboutFileValuesValidations("invalid-orderId.txt");
+    }
+
+    @Test
+    @DisplayName("Deve criar um log quando o id do produto for invalido")
+    public void shouldCreatALogWhenProductIdIsInvalid() throws IOException {
+        testAboutFileValuesValidations("invalid-productId.txt");
+    }
+
+    @Test
+    @DisplayName("Deve criar um log quando o valor do produto for invalido")
+    public void shouldCreatALogWhenProductValueIsInvalid() throws IOException {
+        testAboutFileValuesValidations("invalid-productValue.txt");
+    }
+
+    @Test
+    @DisplayName("Deve criar um log quando a data do pedido for invalida")
+    public void shouldCreatALogWhenOrderDateIsInvalid() throws IOException {
+        testAboutFileValuesValidations("invalid-orderDate.txt");
+    }
+
+    private void testAboutFileValuesValidations(final String invalidFile) throws IOException {
         final MessageCodeEnum messageCodeEnum = MessageCodeEnum.WARN_INVALID_POSITION_VALUE;
-        final MultipartFile multipartFile = readFile("invalid-userId.txt");
+        final MultipartFile multipartFile = readFile(invalidFile);
         when(messageConfiguration.getMessageByCode(any(), any(), any())).thenReturn(messageCodeEnum.getValue());
         assertDoesNotThrow(() -> uploadFileService.uploadFile(multipartFile));
         verify(logService).createLog(fileNameCaptor.capture(), lineNumberCaptor.capture(), logMessageCaptor.capture());
@@ -96,7 +130,7 @@ public class UploadFileServiceTest {
         final Integer lineNumber = lineNumberCaptor.getValue();
         final String logMessage = logMessageCaptor.getValue();
         assertNotNull(fileName);
-        assertEquals(fileName, "invalid-userId.txt");
+        assertEquals(fileName, invalidFile);
         assertTrue(lineNumber > 0);
         assertEquals(logMessage, messageCodeEnum.getValue());
     }

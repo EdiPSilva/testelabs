@@ -10,7 +10,7 @@ public enum InfoLineEnum {
     ORDER_ID("Id do pedido", 56, 65),
     PRODUCT_ID("Id do produto", 66, 75),
     PRODUCT_VALUE("Valor do produto", 76, 87),
-    ORDER_DATE("Data do pedido", 88, 96);
+    ORDER_DATE("Data do pedido", 87, 95);
 
     private String name;
     private int start;
