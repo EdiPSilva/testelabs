@@ -10,7 +10,7 @@ import java.util.Objects;
 
 @AllArgsConstructor
 @Configuration
-@PropertySource("messages.properties")
+@PropertySource("classpath:messages.properties")
 public class MessageConfiguration {
 
     private final Environment environment;

@@ -75,3 +75,17 @@ jacocoTestCoverageVerification {
 		}
 	}
 }
+
+tasks.withType(Test).configureEach {
+	jacoco {
+		excludes += [
+				'br.com.TestLabs.configurations.*',
+				'br.com.TestLabs.dtos.*',
+				'br.com.TestLabs.entities.*',
+				'br.com.TestLabs.enums.*',
+				'br.com.TestLabs.exceptions.*',
+				'br.com.TestLabs.repositories.*',
+				'br.com.TestLabs.resources.*'
+		]
+	}
+}
