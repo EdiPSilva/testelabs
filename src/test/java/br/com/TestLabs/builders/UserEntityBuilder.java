@@ -1,11 +1,9 @@
 package br.com.TestLabs.builders;
 
 import br.com.TestLabs.entities.UserEntity;
-import lombok.Getter;
 
 import java.time.LocalDateTime;
 
-@Getter
 public final class UserEntityBuilder {
 
     private UserEntity userEntity;
@@ -22,5 +20,9 @@ public final class UserEntityBuilder {
                 .createDate(LocalDateTime.now())
                 .build();
         return builder;
+    }
+
+    public UserEntity getUserEntity() {
+        return userEntity;
     }
 }
