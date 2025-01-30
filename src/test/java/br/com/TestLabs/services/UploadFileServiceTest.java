@@ -45,13 +45,25 @@ public class UploadFileServiceTest {
     }
 
     @Test
+    @DisplayName("Deve retorna um erro quando o arquivo for invalido")
+    public void shouldReturnAnErroWhenTheFileIsInvalid() throws IOException {
+        final MessageCodeEnum messageCodeEnum = MessageCodeEnum.ERROR_INVALID_FILE;
+        when(messageConfiguration.getMessageByCode(messageCodeEnum)).thenReturn(messageCodeEnum.getValue());
+        final CustomException throwable = assertThrows(CustomException.class, () -> uploadFileService.uploadFile(null));
+        assertNotNull(throwable);
+        assertEquals(HttpStatus.BAD_REQUEST, throwable.getHttpStatus());
+        assertEquals(throwable.getMessage(), messageCodeEnum.getValue());
+    }
+
+    @Test
     @DisplayName("Deve retorna um erro quando a extensao do arquivo for invalida")
     public void shouldReturnAnErroWhenTheFileExtensionIsInvalid() throws IOException {
+        final MessageCodeEnum messageCodeEnum = MessageCodeEnum.ERROR_INVALID_FILE_EXTENSION;
         final MultipartFile multipartFile = readFile(invalidExtensionFile);
-        when(messageConfiguration.getMessageByCode(MessageCodeEnum.ERROR_INVALID_FILE_EXTENSION)).thenReturn(MessageCodeEnum.ERROR_INVALID_FILE_EXTENSION.getValue());
+        when(messageConfiguration.getMessageByCode(messageCodeEnum)).thenReturn(messageCodeEnum.getValue());
         final CustomException throwable = assertThrows(CustomException.class, () -> uploadFileService.uploadFile(multipartFile));
         assertNotNull(throwable);
         assertEquals(HttpStatus.BAD_REQUEST, throwable.getHttpStatus());
-        assertEquals(throwable.getMessage(), MessageCodeEnum.ERROR_INVALID_FILE_EXTENSION.getValue());
+        assertEquals(throwable.getMessage(), messageCodeEnum.getValue());
     }
 }
