@@ -34,7 +34,7 @@ public class ReadFileService {
         if (Objects.isNull(multipartFile) || multipartFile.isEmpty()) {
             throw new CustomException(messageConfiguration.getMessageByCode(MessageCodeEnum.ERROR_INVALID_FILE), HttpStatus.BAD_REQUEST);
         }
-        validateExtension(multipartFile.getName());
+        validateExtension(Objects.requireNonNull(multipartFile.getContentType()));
         log.info("m=readFile, fileName={}", multipartFile.getName());
         try (final BufferedReader reader = new BufferedReader(new InputStreamReader(multipartFile.getInputStream()))) {
             String line = null;
@@ -59,11 +59,10 @@ public class ReadFileService {
         }
     }
 
-    private void validateExtension(final String fileName) {
-        assert fileName != null;
-        final String extension = fileName.substring(fileName.indexOf(".") + 1);
-        final String validExtension = "txt";
-        if (!extension.contains(validExtension)) {
+    private void validateExtension(final String contentType) {
+        assert contentType != null;
+        final String validExtension = "text/plain";
+        if (!contentType.contains(validExtension)) {
             throw new CustomException(messageConfiguration.getMessageByCode(MessageCodeEnum.ERROR_INVALID_FILE_EXTENSION), HttpStatus.BAD_REQUEST);
         }
     }

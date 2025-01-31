@@ -21,6 +21,7 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final OrderService orderService;
     private final MessageConfiguration messageConfiguration;
 
     public void createUser(final LineDTO lineDTO) {
@@ -29,12 +30,16 @@ public class UserService {
             throw new CustomException(messageConfiguration.getMessageByCode(MessageCodeEnum.ERROR_INVALID_OBJECT), HttpStatus.BAD_REQUEST);
         }
         final Optional<UserEntity> optionalUserEntity = userRepository.findById(lineDTO.getUserId());
+        UserEntity userEntity;
         if (optionalUserEntity.isEmpty()) {
-            final UserEntity userEntity = new UserEntity();
+            userEntity = new UserEntity();
             userEntity.setId(lineDTO.getUserId());
             userEntity.setName(lineDTO.getUserName());
             userEntity.setCreateDate(LocalDateTime.now());
-            userRepository.save(userEntity);
+            userEntity = userRepository.save(userEntity);
+        } else {
+            userEntity = optionalUserEntity.get();
         }
+        orderService.createOrUpdateOrder(userEntity, lineDTO);
     }
 }

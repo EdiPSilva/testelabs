@@ -34,8 +34,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class ReadFileServiceTest {
 
-    private final String validOrdersFile = "valid-orders.txt";
-
     @InjectMocks
     private ReadFileService readFileService;
 
@@ -58,11 +56,12 @@ public class ReadFileServiceTest {
     private ArgumentCaptor<String> logMessageCaptor;
 
     private MultipartFile readFile(final String fileName) throws IOException {
-        final ClassLoader classLoader = getClass().getClassLoader();
-        final File file = new File(Objects.requireNonNull(classLoader.getResource(fileName)).getFile());
-        try (final FileInputStream inputStream = new FileInputStream(file)) {
-            return new MockMultipartFile(file.getName(), inputStream);
-        }
+        return readFile(fileName, "text/plain");
+    }
+
+    private MultipartFile readFile(final String fileName, final String contentType) throws IOException {
+        return new MockMultipartFile(fileName,fileName,contentType,
+                this.getClass().getClassLoader().getResourceAsStream(fileName));
     }
 
     @Test
@@ -82,7 +81,7 @@ public class ReadFileServiceTest {
     public void shouldReturnAnErroWhenTheFileExtensionIsInvalid() throws IOException {
         final MessageCodeEnum messageCodeEnum = MessageCodeEnum.ERROR_INVALID_FILE_EXTENSION;
         final String invalidExtensionFile = "invalid-extension.csv";
-        final MultipartFile multipartFile = readFile(invalidExtensionFile);
+        final MultipartFile multipartFile = readFile(invalidExtensionFile, "text/csv");
         when(messageConfiguration.getMessageByCode(messageCodeEnum)).thenReturn(messageCodeEnum.getValue());
         final CustomException throwable = assertThrows(CustomException.class, () -> readFileService.readFile(multipartFile));
         assertNotNull(throwable);

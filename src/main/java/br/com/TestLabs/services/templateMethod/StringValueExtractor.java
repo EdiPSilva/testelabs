@@ -13,9 +13,9 @@ public class StringValueExtractor extends ValueExtractor {
 
     @Override
     protected String validateAndConvert(final String value, final InfoLineEnum infoLineEnum, final Integer index) {
-        if (value.isBlank()) {
+        if (value.trim().isBlank()) {
             throw new CustomException(messageConfiguration.getMessageByCode(MessageCodeEnum.WARN_INVALID_POSITION_VALUE, infoLineEnum.getName(), index));
         }
-        return value;
+        return value.trim();
     }
 }

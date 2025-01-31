@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -43,6 +44,9 @@ public class UserServiceTest {
     @Mock
     private MessageConfiguration messageConfiguration;
 
+    @Mock
+    private OrderService orderService;
+
     @Captor
     private ArgumentCaptor<UserEntity> userEntityCaptor;
 
@@ -56,6 +60,7 @@ public class UserServiceTest {
         assertEquals(HttpStatus.BAD_REQUEST, throwable.getHttpStatus());
         assertEquals(throwable.getMessage(), messageCodeEnum.getValue());
         verify(userRepository, never()).save(any());
+        verify(orderService, never()).createOrUpdateOrder(any(), any());
     }
 
     @Test
@@ -63,22 +68,26 @@ public class UserServiceTest {
     public void shouldNotCreateTheUserWhenAlreadyExists() {
         final LineDTO lineDTO = LineDTOBuilder.getInstance().getLineDTO();
         final UserEntity userEntity = UserEntityBuilder.getInstance().getUserEntity();
-        Mockito.when(userRepository.findById(anyLong())).thenReturn(Optional.of(userEntity));
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(userEntity));
         assertDoesNotThrow(() -> userService.createUser(lineDTO));
         verify(userRepository, never()).save(any());
+        verify(orderService, times(1)).createOrUpdateOrder(any(), any());
     }
 
     @Test
     @DisplayName("Deve cadastrar o usuario quando nao for localizado")
     public void shouldCreateTheUserWhenNotFound() {
         final LineDTO lineDTO = LineDTOBuilder.getInstance().getLineDTO();
-        Mockito.when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
+        when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
+        final UserEntity userEntity = UserEntityBuilder.getInstance().getUserEntity();
+        when(userRepository.save(any())).thenReturn(userEntity);
         assertDoesNotThrow(() -> userService.createUser(lineDTO));
         verify(userRepository).save(userEntityCaptor.capture());
-        final UserEntity userEntity = userEntityCaptor.getValue();
-        assertNotNull(userEntity);
-        assertEquals(userEntity.getId(), lineDTO.getUserId());
-        assertEquals(userEntity.getName(), lineDTO.getUserName());
-        assertNotNull(userEntity.getCreateDate());
+        final UserEntity userEntityResult = userEntityCaptor.getValue();
+        assertNotNull(userEntityResult);
+        assertEquals(userEntityResult.getId(), lineDTO.getUserId());
+        assertEquals(userEntityResult.getName(), lineDTO.getUserName());
+        assertNotNull(userEntityResult.getCreateDate());
+        verify(orderService, times(1)).createOrUpdateOrder(any(), any());
     }
 }
