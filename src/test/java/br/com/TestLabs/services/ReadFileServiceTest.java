@@ -3,6 +3,7 @@ package br.com.TestLabs.services;
 import br.com.TestLabs.configurations.MessageConfiguration;
 import br.com.TestLabs.enums.MessageCodeEnum;
 import br.com.TestLabs.exceptions.CustomException;
+import br.com.TestLabs.resources.response.ReadFileResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -127,7 +128,9 @@ public class ReadFileServiceTest {
         final MessageCodeEnum messageCodeEnum = MessageCodeEnum.WARN_INVALID_POSITION_VALUE;
         final MultipartFile multipartFile = readFile(invalidFile);
         when(messageConfiguration.getMessageByCode(any(), any(), any())).thenReturn(messageCodeEnum.getValue());
-        assertDoesNotThrow(() -> readFileService.readFile(multipartFile));
+        final ReadFileResponse readFileResponse = assertDoesNotThrow(() -> readFileService.readFile(multipartFile));
+        assertNotNull(readFileResponse);
+        assertEquals(readFileResponse.fileName(), invalidFile);
         verify(logService).createLog(fileNameCaptor.capture(), lineNumberCaptor.capture(), logMessageCaptor.capture());
         final String fileName = fileNameCaptor.getValue();
         final Integer lineNumber = lineNumberCaptor.getValue();
@@ -142,9 +145,34 @@ public class ReadFileServiceTest {
     @Test
     @DisplayName("Nao deve retornar nenhum erro e executar a rotina de cadastro")
     public void shouldNotReturnNoErrorAndRunTheCreateRoutine() throws IOException {
-        final MultipartFile multipartFile = readFile("valid-orders.txt");
-        assertDoesNotThrow(() -> readFileService.readFile(multipartFile));
-        verify(messageConfiguration, never()).getMessageByCode(any());
+        final String fileName = "valid-orders.txt";
+        final MultipartFile multipartFile = readFile(fileName);
+        final MessageCodeEnum messageCodeEnum = MessageCodeEnum.MESSAGE_IMPORT_SUCCESS;
+        when(messageConfiguration.getMessageByCode(any())).thenReturn(messageCodeEnum.getValue());
+        final ReadFileResponse readFileResponse = assertDoesNotThrow(() -> readFileService.readFile(multipartFile));
+        assertNotNull(readFileResponse);
+        assertEquals(readFileResponse.fileName(), fileName);
+        assertEquals(readFileResponse.totalRows(), 5);
+        assertEquals(readFileResponse.totalRowsError(), 0);
+        assertEquals(readFileResponse.message(), messageCodeEnum.getValue());
         verify(userService, times(5)).createUser(any());
+    }
+
+    @Test
+    @DisplayName("Nao deve retornar nenhum erro e executar a rotina de cadastro com importacao parcial")
+    public void shouldNotReturnNoErrorAndRunTheCreateRoutineWithPartialImportation() throws IOException {
+        final String fileName = "partial-orders.txt";
+        final MultipartFile multipartFile = readFile(fileName);
+        final MessageCodeEnum messageCodeEnum = MessageCodeEnum.WARN_INVALID_POSITION_VALUE;
+        when(messageConfiguration.getMessageByCode(any(), any(), any())).thenReturn(messageCodeEnum.getValue());
+        final MessageCodeEnum messageCodeEnumResult = MessageCodeEnum.MESSAGE_IMPORT_PARTIAL;
+        when(messageConfiguration.getMessageByCode(any())).thenReturn(messageCodeEnumResult.getValue());
+        final ReadFileResponse readFileResponse = assertDoesNotThrow(() -> readFileService.readFile(multipartFile));
+        assertNotNull(readFileResponse);
+        assertEquals(readFileResponse.fileName(), fileName);
+        assertEquals(readFileResponse.totalRows(), 5);
+        assertEquals(readFileResponse.totalRowsError(), 1);
+        assertEquals(readFileResponse.message(), messageCodeEnumResult.getValue());
+        verify(userService, times(4)).createUser(any());
     }
 }
