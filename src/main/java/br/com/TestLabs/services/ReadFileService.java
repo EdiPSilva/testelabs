@@ -25,7 +25,6 @@ import java.util.Objects;
 @AllArgsConstructor
 public class ReadFileService {
 
-    private final String validExtension = "txt";
     private final MessageConfiguration messageConfiguration;
     private final LogService logService;
     private final UserService userService;
@@ -63,6 +62,7 @@ public class ReadFileService {
     private void validateExtension(final String fileName) {
         assert fileName != null;
         final String extension = fileName.substring(fileName.indexOf(".") + 1);
+        final String validExtension = "txt";
         if (!extension.contains(validExtension)) {
             throw new CustomException(messageConfiguration.getMessageByCode(MessageCodeEnum.ERROR_INVALID_FILE_EXTENSION), HttpStatus.BAD_REQUEST);
         }

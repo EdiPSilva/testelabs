@@ -14,11 +14,10 @@ public final class UserEntityBuilder {
 
     public static UserEntityBuilder getInstance() {
         final UserEntityBuilder builder = new UserEntityBuilder();
-        builder.userEntity = UserEntity.builder()
-                .id(1L)
-                .name("teste")
-                .createDate(LocalDateTime.now())
-                .build();
+        builder.userEntity = new UserEntity();
+        builder.userEntity.setId(1L);
+        builder.userEntity.setName("teste");
+        builder.userEntity.setCreateDate(LocalDateTime.now());
         return builder;
     }
 

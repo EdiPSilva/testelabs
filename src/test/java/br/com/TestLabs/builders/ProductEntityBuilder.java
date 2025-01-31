@@ -14,12 +14,11 @@ public final class ProductEntityBuilder {
 
     public static ProductEntityBuilder getInstance() {
         final ProductEntityBuilder builder = new ProductEntityBuilder();
-        builder.productEntity = ProductEntity.builder()
-                .id(1L)
-                .value(10.5)
-                .createDate(LocalDateTime.now())
-                .order(OrderEntityBuilder.getInstance().getOrderEntity())
-                .build();
+        builder.productEntity = new ProductEntity();
+        builder.productEntity.setId(1L);
+        builder.productEntity.setValue(10.5);
+        builder.productEntity.setCreateDate(LocalDateTime.now());
+        builder.productEntity.setOrder(OrderEntityBuilder.getInstance().getOrderEntity());
         return builder;
     }
 

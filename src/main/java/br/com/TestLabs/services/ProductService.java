@@ -31,12 +31,11 @@ public class ProductService {
         }
         final Optional<ProductEntity> productEntityOptional = productRepository.findProductByIdAndOrderId(lineDTO.getProductId(), orderEntity.getId());
         if (productEntityOptional.isEmpty()) {
-            final ProductEntity productEntity = ProductEntity.builder()
-                    .id(lineDTO.getProductId())
-                    .value(lineDTO.getProductValue())
-                    .createDate(LocalDateTime.now())
-                    .order(orderEntity)
-                    .build();
+            final ProductEntity productEntity = new ProductEntity();
+            productEntity.setId(lineDTO.getProductId());
+            productEntity.setValue(lineDTO.getProductValue());
+            productEntity.setCreateDate(LocalDateTime.now());
+            productEntity.setOrder(orderEntity);
             productRepository.save(productEntity);
         } else {
             final ProductEntity productEntity = productEntityOptional.get();

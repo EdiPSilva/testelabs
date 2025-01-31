@@ -27,12 +27,11 @@ public class LogService {
             log.error("m=createLog, message= Dados invalidos para a gravacao do log");
             throw new CustomException(messageConfiguration.getMessageByCode(MessageCodeEnum.ERROR_INVALID_DATA_CREATE_LOG), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        final LogEntity logEntity = LogEntity.builder()
-                .fileName(fileName)
-                .lineNumber(lineNumber)
-                .logMessage(logMessage)
-                .createDate(LocalDateTime.now())
-                .build();
+        final LogEntity logEntity = new LogEntity();
+        logEntity.setFileName(fileName);
+        logEntity.setLineNumber(lineNumber);
+        logEntity.setLogMessage(logMessage);
+        logEntity.setCreateDate(LocalDateTime.now());
         logRepository.save(logEntity);
     }
 }

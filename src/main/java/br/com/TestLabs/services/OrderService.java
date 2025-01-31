@@ -34,12 +34,11 @@ public class OrderService {
         final Optional<OrderEntity> orderEntityOptional = orderRepository.findOrderByIdAndUserId(lineDTO.getOrderId(), userEntity.getId());
         OrderEntity orderEntity;
         if (orderEntityOptional.isEmpty()) {
-            orderEntity = OrderEntity.builder()
-                    .id(lineDTO.getOrderId())
-                    .date(lineDTO.getOrderDate())
-                    .createDate(LocalDateTime.now())
-                    .user(userEntity)
-                    .build();
+            orderEntity = new OrderEntity();
+            orderEntity.setId(lineDTO.getOrderId());
+            orderEntity.setDate(lineDTO.getOrderDate());
+            orderEntity.setCreateDate(LocalDateTime.now());
+            orderEntity.setUser(userEntity);
         } else {
             orderEntity = orderEntityOptional.get();
             orderEntity.setUpdateDate(LocalDateTime.now());

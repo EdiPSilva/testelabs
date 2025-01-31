@@ -15,14 +15,13 @@ public final class OrderEntityBuilder {
 
     public static OrderEntityBuilder getInstance() {
         final OrderEntityBuilder builder = new OrderEntityBuilder();
-        builder.orderEntity = OrderEntity.builder()
-                .id(1L)
-                .totalAmount(10.5)
-                .date(LocalDate.now())
-                .createDate(LocalDateTime.now())
-                .updateDate(LocalDateTime.now().plusMinutes(1))
-                .user(UserEntityBuilder.getInstance().getUserEntity())
-                .build();
+        builder.orderEntity = new OrderEntity();
+        builder.orderEntity.setId(1L);
+        builder.orderEntity.setTotalAmount(10.5);
+        builder.orderEntity.setDate(LocalDate.now());
+        builder.orderEntity.setCreateDate(LocalDateTime.now());
+        builder.orderEntity.setUpdateDate(LocalDateTime.now().plusMinutes(1));
+        builder.orderEntity.setUser(UserEntityBuilder.getInstance().getUserEntity());
         return builder;
     }
 

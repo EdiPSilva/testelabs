@@ -30,11 +30,10 @@ public class UserService {
         }
         final Optional<UserEntity> optionalUserEntity = userRepository.findById(lineDTO.getUserId());
         if (optionalUserEntity.isEmpty()) {
-            final UserEntity userEntity = UserEntity.builder()
-                    .id(lineDTO.getUserId())
-                    .name(lineDTO.getUserName())
-                    .createDate(LocalDateTime.now())
-                    .build();
+            final UserEntity userEntity = new UserEntity();
+            userEntity.setId(lineDTO.getUserId());
+            userEntity.setName(lineDTO.getUserName());
+            userEntity.setCreateDate(LocalDateTime.now());
             userRepository.save(userEntity);
         }
     }
