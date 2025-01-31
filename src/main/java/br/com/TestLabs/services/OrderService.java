@@ -43,7 +43,7 @@ public class OrderService {
             orderEntity = orderEntityOptional.get();
             orderEntity.setUpdateDate(LocalDateTime.now());
         }
-        orderEntity.setTotalAmount(totalAmount + lineDTO.getProductValue());
+        orderEntity.setTotalAmount((Objects.isNull(totalAmount) ? 0 : totalAmount) + lineDTO.getProductValue());
         orderEntity = orderRepository.save(orderEntity);
         productService.createOrUpdateProduct(orderEntity, lineDTO);
     }

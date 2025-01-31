@@ -53,7 +53,7 @@ public class ReadFileService {
                     userService.createUser(lineDTO);
                 } catch (CustomException customException) {
                     log.warn(customException.getMessage());
-                    logService.createLog(multipartFile.getName(), index, customException.getMessage());
+                    logService.createLog(multipartFile.getOriginalFilename(), index, customException.getMessage());
                 }
             }
         }
